@@ -7,66 +7,89 @@
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#0b5">
   <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="icons/icon-192.png" sizes="192x192">
   <script>
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js');
-      });
+      window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
     }
   </script>
 </head>
 <body>
-  <header>
+  <header class="appbar">
     <h1>Card Wallet</h1>
-    <button id="btnAdd" title="Add a new card">＋</button>
+    <div class="right">
+      <button id="installBtn" hidden class="ghost">Install</button>
+    </div>
   </header>
 
-  <section class="controls">
-    <label for="sortBy">Sort by</label>
-    <select id="sortBy">
-      <option value="recent">Most recent</option>
-      <option value="opens">Most opened</option>
-      <option value="name">Name (A–Z)</option>
-    </select>
-    <input id="search" type="search" placeholder="Search cards…" aria-label="Search cards">
+  <section class="controls shell">
+    <div class="field">
+      <label for="sortBy">Sort</label>
+      <select id="sortBy">
+        <option value="recent">Most recent</option>
+        <option value="opens">Most opened</option>
+        <option value="name">Name (A–Z)</option>
+      </select>
+    </div>
+    <div class="field grow">
+      <label for="search">Search</label>
+      <input id="search" type="search" placeholder="Search cards">
+    </div>
+    <div class="toggles">
+      <label class="toggle"><input type="checkbox" id="brightToggle" checked> Bright</label>
+      <label class="toggle"><input type="checkbox" id="hapticsToggle" checked> Haptics</label>
+    </div>
   </section>
 
-  <main id="gallery" aria-live="polite"></main>
+  <main id="gallery" class="shell" aria-live="polite"></main>
 
-  <dialog id="editDialog">
+  <dialog id="editDialog" class="sheet">
     <form method="dialog" id="editForm">
       <h2 id="dialogTitle">Add card</h2>
-      <label>Card name
-        <input required name="name" id="nameInput">
-      </label>
-      <label>Card image
-        <input required type="file" accept="image/*" id="cardImageInput">
-      </label>
-      <label>Barcode image
-        <input required type="file" accept="image/*" id="barcodeImageInput">
-      </label>
+      <div class="grid">
+        <label>Card name
+          <input required name="name" id="nameInput" maxlength="80" placeholder="Woolworths Rewards">
+        </label>
+        <label>Card image
+          <input required type="file" accept="image/*" capture="environment" id="cardImageInput">
+        </label>
+        <label>Barcode image
+          <input required type="file" accept="image/*" id="barcodeImageInput">
+        </label>
+      </div>
       <menu>
-        <button value="cancel">Cancel</button>
-        <button id="saveBtn" value="default">Save</button>
+        <button value="cancel" class="ghost">Cancel</button>
+        <button id="saveBtn" value="default" class="primary">Save</button>
       </menu>
     </form>
   </dialog>
 
-  <dialog id="barcodeDialog">
+  <dialog id="barcodeDialog" class="light">
     <img id="barcodeImg" alt="Barcode" />
   </dialog>
 
   <template id="cardTpl">
     <article class="card">
-      <button class="thumbBtn"><img class="thumb" alt="" /></button>
-      <div class="meta"><h3 class="name"></h3></div>
+      <button class="thumbBtn" title="Show barcode">
+        <img class="thumb" alt="" />
+      </button>
+      <div class="meta">
+        <div class="name"></div>
+        <div class="stats">
+          <span class="chip" title="Times opened">⨯ <b class="opens">0</b></span>
+          <span class="chip" title="Last opened"><span class="recent">—</span></span>
+        </div>
+      </div>
+      <menu class="cardMenu">
+        <button class="ghost edit">Edit</button>
+        <button class="danger del">Delete</button>
+      </menu>
     </article>
   </template>
 
-  <footer>
-    <button id="installBtn" hidden>Install</button>
-    <label class="toggle"><input type="checkbox" id="brightToggle" checked> Brightness boost</label>
-    <label class="toggle"><input type="checkbox" id="hapticsToggle" checked> Haptics</label>
+  <button id="btnAdd" class="fab" aria-label="Add card">＋</button>
+
+  <footer class="shell footnote">
     <small>Works offline · Data stays on this device</small>
   </footer>
 

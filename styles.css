@@ -1,7 +1,117 @@
-body{margin:0;font-family:sans-serif;background:#0a0a0a;color:#fff}
-#gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1rem;padding:1rem}
-.card{background:#121212;border-radius:.5rem;overflow:hidden}
-.thumb{width:100%;height:100px;object-fit:cover}
-dialog{border:none;border-radius:.5rem}
-.toggle{display:inline-flex;align-items:center;gap:.3rem;margin-left:.5rem}
-body.bright-mode{background:#fff;color:#000}
+:root{
+  --bg: #0b0b10;
+  --bg2: #0e0e15;
+  --grad1: #0b0f1a;
+  --grad2: #0a2118;
+  --card: #12141a;
+  --card-strong:#171a22;
+  --text: #f2f3f5;
+  --muted:#aeb3ba;
+  --line:#232730;
+  --brand:#16c27a;
+  --brand-strong:#0fa365;
+  --danger:#d44;
+  --radius: 16px;
+  --shadow: 0 1px 2px rgba(0,0,0,.25), 0 8px 22px rgba(0,0,0,.35);
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  color:var(--text);
+  background: radial-gradient(1200px 800px at 15% -10%, var(--grad2), transparent),
+              radial-gradient(1000px 700px at 90% 10%, #15203a40, transparent),
+              linear-gradient(180deg, var(--bg), var(--bg2));
+}
+
+.appbar{
+  position:sticky;top:0;z-index:10;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 16px;
+  backdrop-filter: blur(10px);
+  background: color-mix(in srgb, var(--bg) 70%, transparent);
+  border-bottom:1px solid var(--line);
+}
+.appbar h1{margin:0;font-size:1.05rem;letter-spacing:.3px}
+.shell{padding:16px;max-width:1100px;margin-inline:auto}
+
+.controls{
+  display:grid;grid-template-columns: 160px 1fr auto;gap:12px;align-items:end;
+  border-bottom:1px solid var(--line);
+}
+.controls .field{display:grid;gap:6px}
+.controls .field input,
+.controls .field select{
+  background:#0f1117;color:var(--text);
+  border:1px solid var(--line);border-radius:12px;padding:10px 12px;
+  outline:none
+}
+.controls .field input:focus, .controls .field select:focus{border-color:#2c3340}
+.controls .toggles{display:flex;gap:10px;align-items:center;justify-content:flex-end}
+.toggle{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:.9rem}
+.toggle input{accent-color:var(--brand)}
+
+#gallery{display:grid;gap:16px;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  padding-block:18px;
+}
+
+.card{
+  background: linear-gradient(180deg, var(--card), var(--card-strong));
+  border:1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow:hidden;
+  transition: transform .15s ease, box-shadow .2s ease, border-color .2s ease;
+}
+.card:hover{transform: translateY(-2px); border-color:#2a3140; box-shadow: 0 6px 28px rgba(0,0,0,.45)}
+
+.thumbBtn{display:block;padding:0;border:0;background:none;cursor:pointer}
+.thumb{width:100%; aspect-ratio: 16/10; object-fit:cover; display:block; background:#0a0a0a}
+
+.meta{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 14px}
+.name{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stats{display:flex;gap:8px;align-items:center}
+.chip{border:1px solid var(--line);color:var(--muted);padding:2px 8px;border-radius:999px;font-size:.78rem}
+.cardMenu{display:flex;gap:8px;padding:0 14px 14px}
+.cardMenu .ghost, .ghost{background:transparent;border:1px solid var(--line);color:var(--text);padding:8px 10px;border-radius:10px}
+.cardMenu .danger{background:#2a1616;border:1px solid #3a1c1c;color:#ffb4b4;padding:8px 10px;border-radius:10px}
+.primary{background:var(--brand);border:1px solid var(--brand-strong);color:#041; padding:10px 14px;border-radius:12px;font-weight:600}
+
+.fab{
+  position:fixed; bottom:20px; right:20px; z-index:11;
+  width:56px; height:56px; border-radius:50%;
+  border:1px solid #124d36; color:#031; font-size:28px; line-height:1;
+  background: radial-gradient(80px 80px at 30% 20%, #3bffb8, #0fb375);
+  box-shadow: 0 10px 24px rgba(0,0,0,.45);
+  cursor:pointer;
+}
+.fab:active{transform:translateY(1px)}
+
+.sheet{border:1px solid var(--line);border-radius:16px;padding:0;background:var(--card)}
+.sheet form{padding:18px;display:grid;gap:14px}
+.sheet h2{margin:0 0 6px 0;font-size:1.1rem}
+.sheet .grid{display:grid;gap:12px}
+.sheet input[type="file"], .sheet input[type="text"], .sheet input:not([type]){
+  background:#0f1117;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%
+}
+.sheet menu{display:flex;justify-content:flex-end;gap:10px;margin:0}
+dialog::backdrop{background:rgba(0,0,0,.55)}
+
+#barcodeDialog.light{padding:0;border-radius:16px;border:1px solid #e8e8e8;background:#fff}
+#barcodeImg{max-width:92vw;max-height:88vh;display:block}
+body.bright-mode{background:#fff;color:#111}
+body.bright-mode .appbar, body.bright-mode .controls, body.bright-mode .shell, body.bright-mode .sheet{background:#fff;color:#111;border-color:#e8e8e8}
+body.bright-mode .card{background:#fff;border-color:#e8e8e8}
+body.bright-mode .chip{border-color:#e1e1e1;color:#333}
+.footnote{color:var(--muted);padding-bottom:64px}
+
+@media (min-width:760px){
+  .sheet .grid{grid-template-columns: 1fr 1fr}
+}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:0.01ms!important; animation-iteration-count:1!important; transition-duration:0.01ms!important; scroll-behavior:auto!important;}
+}
