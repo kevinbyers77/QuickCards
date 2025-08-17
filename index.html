@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#0b5">
   <link rel="icon" href="icons/icon-192.png" sizes="192x192">
   <link rel="stylesheet" href="styles.css">
-   
+
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
@@ -18,33 +18,45 @@
 <body>
   <header class="appbar">
     <h1>Card Wallet</h1>
-    <div class="right">
-      <button id="installBtn" hidden class="ghost">Install</button>
+    <div class="right" style="display:flex; gap:8px;">
+      <button id="installBtn" hidden class="icon-btn">Install</button>
+      <button id="settingsBtn" class="icon-btn" aria-label="Settings">
+        <span class="icon">⚙️</span> Settings
+      </button>
     </div>
   </header>
 
-  <section class="controls shell">
-    <div class="field">
-      <label for="sortBy">Sort</label>
-      <select id="sortBy">
-        <option value="recent">Most recent</option>
-        <option value="opens">Most opened</option>
-        <option value="name">Name (A–Z)</option>
-      </select>
-    </div>
-    <div class="field grow">
-      <label for="search">Search</label>
-      <input id="search" type="search" placeholder="Search cards">
-    </div>
-    <div class="toggles">
-      <label class="toggle"><input type="checkbox" id="brightToggle" checked> Bright</label>
-      <label class="toggle"><input type="checkbox" id="hapticsToggle" checked> Haptics</label>
-    </div>
-  </section>
-
+  <!-- Gallery only (controls moved into Settings) -->
   <main id="gallery" class="shell" aria-live="polite"></main>
 
-  <!-- Add/Edit -->
+  <!-- Settings dialog (Sort/Search/Bright/Haptics) -->
+  <dialog id="settingsDialog" class="sheet">
+    <form method="dialog" id="settingsForm">
+      <h2>Settings</h2>
+      <div class="grid">
+        <label for="sortBy">Sort</label>
+        <select id="sortBy">
+          <option value="recent">Most recent</option>
+          <option value="opens">Most opened</option>
+          <option value="name">Name (A–Z)</option>
+        </select>
+
+        <label for="search" style="margin-top:8px;">Search</label>
+        <input id="search" type="search" placeholder="Search cards">
+
+        <label style="margin-top:8px;">Display</label>
+        <div style="display:flex; gap:12px; align-items:center;">
+          <label class="toggle"><input type="checkbox" id="brightToggle" checked> Bright</label>
+          <label class="toggle"><input type="checkbox" id="hapticsToggle" checked> Haptics</label>
+        </div>
+      </div>
+      <menu>
+        <button value="cancel" class="btn ghost">Close</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <!-- Add/Edit card -->
   <dialog id="editDialog" class="sheet">
     <form method="dialog" id="editForm">
       <h2 id="dialogTitle">Add card</h2>
@@ -60,7 +72,6 @@
             <button type="button" class="btn" id="cardTake">📷 Take photo</button>
             <button type="button" class="btn ghost" id="cardChoose">Choose photo</button>
           </div>
-          <!-- Separate inputs: camera vs library -->
           <input type="file" accept="image/*" capture="environment" id="cardImageCamera" hidden>
           <input type="file" accept="image/*" id="cardImageFile" hidden>
           <div class="hint" id="cardSelected">No image selected</div>
@@ -86,11 +97,12 @@
     </form>
   </dialog>
 
-  <!-- Barcode viewer -->
+  <!-- Barcode viewer (stays big) -->
   <dialog id="barcodeDialog" class="light">
     <img id="barcodeImg" alt="Barcode" />
   </dialog>
 
+  <!-- Card template -->
   <template id="cardTpl">
     <article class="card">
       <button class="thumbBtn" title="Show barcode">
@@ -110,6 +122,7 @@
     </article>
   </template>
 
+  <!-- FAB -->
   <button id="btnAdd" class="fab" aria-label="Add card">＋</button>
 
   <footer class="shell footnote">
