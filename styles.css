@@ -1,0 +1,7 @@
+body{margin:0;font-family:sans-serif;background:#0a0a0a;color:#fff}
+#gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1rem;padding:1rem}
+.card{background:#121212;border-radius:.5rem;overflow:hidden}
+.thumb{width:100%;height:100px;object-fit:cover}
+dialog{border:none;border-radius:.5rem}
+.toggle{display:inline-flex;align-items:center;gap:.3rem;margin-left:.5rem}
+body.bright-mode{background:#fff;color:#000}

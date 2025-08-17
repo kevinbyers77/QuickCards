@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Card Wallet</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#0b5">
+  <link rel="stylesheet" href="styles.css">
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js');
+      });
+    }
+  </script>
+</head>
+<body>
+  <header>
+    <h1>Card Wallet</h1>
+    <button id="btnAdd" title="Add a new card">＋</button>
+  </header>
+
+  <section class="controls">
+    <label for="sortBy">Sort by</label>
+    <select id="sortBy">
+      <option value="recent">Most recent</option>
+      <option value="opens">Most opened</option>
+      <option value="name">Name (A–Z)</option>
+    </select>
+    <input id="search" type="search" placeholder="Search cards…" aria-label="Search cards">
+  </section>
+
+  <main id="gallery" aria-live="polite"></main>
+
+  <dialog id="editDialog">
+    <form method="dialog" id="editForm">
+      <h2 id="dialogTitle">Add card</h2>
+      <label>Card name
+        <input required name="name" id="nameInput">
+      </label>
+      <label>Card image
+        <input required type="file" accept="image/*" id="cardImageInput">
+      </label>
+      <label>Barcode image
+        <input required type="file" accept="image/*" id="barcodeImageInput">
+      </label>
+      <menu>
+        <button value="cancel">Cancel</button>
+        <button id="saveBtn" value="default">Save</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <dialog id="barcodeDialog">
+    <img id="barcodeImg" alt="Barcode" />
+  </dialog>
+
+  <template id="cardTpl">
+    <article class="card">
+      <button class="thumbBtn"><img class="thumb" alt="" /></button>
+      <div class="meta"><h3 class="name"></h3></div>
+    </article>
+  </template>
+
+  <footer>
+    <button id="installBtn" hidden>Install</button>
+    <label class="toggle"><input type="checkbox" id="brightToggle" checked> Brightness boost</label>
+    <label class="toggle"><input type="checkbox" id="hapticsToggle" checked> Haptics</label>
+    <small>Works offline · Data stays on this device</small>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
