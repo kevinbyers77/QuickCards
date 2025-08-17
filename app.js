@@ -1,10 +1,9 @@
-/* Card Wallet — smaller cards + Settings dialog + existing features */
+/* Card Wallet — fixed build */
 (() => {
   const dbName = 'card-wallet-db';
   const storeName = 'cards';
   let db, deferredPrompt = null, wakeLock = null;
 
-  // Core elements
   const gallery = document.getElementById('gallery');
   const tpl = document.getElementById('cardTpl');
   const addBtn = document.getElementById('btnAdd');
@@ -15,7 +14,6 @@
   const barcodeDialog = document.getElementById('barcodeDialog');
   const barcodeImg = document.getElementById('barcodeImg');
 
-  // Settings UI
   const settingsBtn = document.getElementById('settingsBtn');
   const settingsDialog = document.getElementById('settingsDialog');
   const sortBy = document.getElementById('sortBy');
@@ -23,7 +21,6 @@
   const brightToggle = document.getElementById('brightToggle');
   const hapticsToggle = document.getElementById('hapticsToggle');
 
-  // Picker (camera/library) elements
   const cardTake = document.getElementById('cardTake');
   const cardChoose = document.getElementById('cardChoose');
   const cardCameraInput = document.getElementById('cardImageCamera');
@@ -37,12 +34,11 @@
   const barSelected = document.getElementById('barSelected');
 
   const installBtn = document.getElementById('installBtn');
-  const PREFS_KEY = 'cw_prefs_v2'; // bump key since we added settings dialog
+  const PREFS_KEY = 'cw_prefs_v4';
 
   let pendingCardFile = null;
   let pendingBarFile  = null;
 
-  // Install prompt
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault(); deferredPrompt = e; if (installBtn) installBtn.hidden = false;
   });
@@ -52,10 +48,8 @@
     deferredPrompt = null; installBtn.hidden = true;
   });
 
-  // Settings open
   settingsBtn.addEventListener('click', () => settingsDialog.showModal());
 
-  // Prefs
   function loadPrefs(){
     try{
       const p = JSON.parse(localStorage.getItem(PREFS_KEY) || '{}');
@@ -81,7 +75,6 @@
   hapticsToggle.addEventListener('change', savePrefs);
   loadPrefs();
 
-  // Haptics + Brightness
   function haptic(ms=20){ if (hapticsToggle.checked && navigator.vibrate) navigator.vibrate(ms); }
   async function enterBrightMode(){
     if (!brightToggle.checked) return;
@@ -98,7 +91,6 @@
     try { if (document.fullscreenElement && document.exitFullscreen) await document.exitFullscreen(); } catch {}
   }
 
-  // IndexedDB
   function openDB(){
     return new Promise((resolve,reject)=>{
       const req = indexedDB.open(dbName,1);
@@ -119,7 +111,6 @@
   async function putCard(d){ const s=await idb('readwrite'); return new Promise((res,rej)=>{ const r=s.put(d); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
   async function deleteCard(id){ const s=await idb('readwrite'); return new Promise((res,rej)=>{ const r=s.delete(id); r.onsuccess=()=>res(); r.onerror=()=>rej(r.error); }); }
 
-  // Utils
   const readFile = (file) => new Promise((res,rej)=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.onerror=rej; fr.readAsArrayBuffer(file); });
   const blobFrom = (buf,type) => new Blob([buf], { type: type || 'image/png' });
   const fmtDate = (ts)=> ts ? new Date(ts).toLocaleString([], {hour:'2-digit',minute:'2-digit',day:'2-digit',month:'short'}) : '—';
@@ -179,14 +170,14 @@
     editDialog.showModal();
   }
 
-  // FAB
   addBtn.addEventListener('click', () => openEdit(null));
 
-  // Camera / library triggers
+  // Picker triggers
   cardTake.addEventListener('click', () => cardCameraInput.click());
   cardChoose.addEventListener('click', () => cardFileInput.click());
   barTake.addEventListener('click', () => barCameraInput.click());
   barChoose.addEventListener('click', () => barFileInput.click());
+
   [cardCameraInput, cardFileInput].forEach(inp => inp.addEventListener('change', () => {
     if (inp.files && inp.files[0]) { pendingCardFile = inp.files[0]; cardSelected.textContent = pendingCardFile.name || 'Photo selected'; }
   }));
@@ -194,7 +185,6 @@
     if (inp.files && inp.files[0]) { pendingBarFile = inp.files[0]; barSelected.textContent = pendingBarFile.name || 'Photo selected'; }
   }));
 
-  // Save / Cancel
   editForm.addEventListener('submit', async (e) => {
     if (e.submitter && e.submitter.value === 'cancel') { editDialog.close(); return; }
     e.preventDefault();
@@ -218,7 +208,6 @@
     editDialog.close(); await render();
   });
 
-  // Barcode behavior
   barcodeDialog.addEventListener('click', () => { haptic(15); barcodeDialog.close(); });
   barcodeDialog.addEventListener('close', exitBrightMode);
 

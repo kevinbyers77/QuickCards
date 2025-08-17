@@ -5,10 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Card Wallet</title>
   <link rel="manifest" href="manifest.webmanifest">
-  <meta name="theme-color" content="#0b5">
+  <meta name="theme-color" content="#16c27a">
   <link rel="icon" href="icons/icon-192.png" sizes="192x192">
   <link rel="stylesheet" href="styles.css">
-
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
@@ -16,20 +15,17 @@
   </script>
 </head>
 <body>
-  <header class="appbar">
+  <header class="appbar shell">
     <h1>Card Wallet</h1>
-    <div class="right" style="display:flex; gap:8px;">
-      <button id="installBtn" hidden class="icon-btn">Install</button>
-      <button id="settingsBtn" class="icon-btn" aria-label="Settings">
-        <span class="icon">⚙️</span> Settings
-      </button>
+    <div class="right">
+      <button id="installBtn" hidden class="btn ghost">Install</button>
+      <button id="settingsBtn" class="btn ghost" aria-label="Settings">⚙️ Settings</button>
     </div>
   </header>
 
-  <!-- Gallery only (controls moved into Settings) -->
   <main id="gallery" class="shell" aria-live="polite"></main>
 
-  <!-- Settings dialog (Sort/Search/Bright/Haptics) -->
+  <!-- Settings dialog -->
   <dialog id="settingsDialog" class="sheet">
     <form method="dialog" id="settingsForm">
       <h2>Settings</h2>
@@ -41,11 +37,11 @@
           <option value="name">Name (A–Z)</option>
         </select>
 
-        <label for="search" style="margin-top:8px;">Search</label>
+        <label for="search" class="mt">Search</label>
         <input id="search" type="search" placeholder="Search cards">
 
-        <label style="margin-top:8px;">Display</label>
-        <div style="display:flex; gap:12px; align-items:center;">
+        <label class="mt">Display</label>
+        <div class="row">
           <label class="toggle"><input type="checkbox" id="brightToggle" checked> Bright</label>
           <label class="toggle"><input type="checkbox" id="hapticsToggle" checked> Haptics</label>
         </div>
@@ -97,7 +93,7 @@
     </form>
   </dialog>
 
-  <!-- Barcode viewer (stays big) -->
+  <!-- Barcode viewer -->
   <dialog id="barcodeDialog" class="light">
     <img id="barcodeImg" alt="Barcode" />
   </dialog>
@@ -122,7 +118,6 @@
     </article>
   </template>
 
-  <!-- FAB -->
   <button id="btnAdd" class="fab" aria-label="Add card">＋</button>
 
   <footer class="shell footnote">
