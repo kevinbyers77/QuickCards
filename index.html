@@ -6,8 +6,9 @@
   <title>Card Wallet</title>
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#0b5">
-  <link rel="stylesheet" href="styles.css">
   <link rel="icon" href="icons/icon-192.png" sizes="192x192">
+  <link rel="stylesheet" href="styles.css">
+
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
@@ -43,6 +44,7 @@
 
   <main id="gallery" class="shell" aria-live="polite"></main>
 
+  <!-- Add/Edit -->
   <dialog id="editDialog" class="sheet">
     <form method="dialog" id="editForm">
       <h2 id="dialogTitle">Add card</h2>
@@ -58,12 +60,14 @@
         </label>
       </div>
       <menu>
-        <button value="cancel" class="ghost">Cancel</button>
+        <!-- Make cancel submit with value=cancel and skip validation -->
+        <button value="cancel" class="ghost" formnovalidate>Cancel</button>
         <button id="saveBtn" value="default" class="primary">Save</button>
       </menu>
     </form>
   </dialog>
 
+  <!-- Barcode viewer -->
   <dialog id="barcodeDialog" class="light">
     <img id="barcodeImg" alt="Barcode" />
   </dialog>
@@ -76,8 +80,8 @@
       <div class="meta">
         <div class="name"></div>
         <div class="stats">
-          <span class="chip" title="Times opened">⨯ <b class="opens">0</b></span>
-          <span class="chip" title="Last opened"><span class="recent">—</span></span>
+          <span class="chip">⨯ <b class="opens">0</b></span>
+          <span class="chip"><span class="recent">—</span></span>
         </div>
       </div>
       <menu class="cardMenu">
