@@ -127,11 +127,6 @@ body.bright-mode .chip{border-color:#e1e1e1;color:#333}
   }
   
 }
-/* Stop iOS input zoom */
-input, select, textarea, button {
-  font-size: 16px;       /* iOS won't zoom if it's ≥16px */
-  line-height: 1.2;      /* avoids clipping */
-}
 
 /* (Optional) specifically for the dialog fields */
 .sheet input[type="text"],
@@ -140,4 +135,22 @@ input, select, textarea, button {
   font-size: 16px;
 }
 
-html { -webkit-text-size-adjust: 100%; }
+/* Readability + iOS zoom prevention */
+    html { -webkit-text-size-adjust: 100%; }
+    input, select, textarea, button { font-size:16px; line-height:1.2; }
+    /* Dialog text contrast */
+    .sheet h2 { color:#e9edf1; }
+    .sheet label, .picker-label { color:#cfd6de; font-weight:600; }
+    .sheet input[type="text"] { color:#fff; }
+    .sheet input::placeholder { color:#9aa3ad; }
+    .hint { color:#9aa3ad; font-size:.9rem; margin-top:6px; }
+    /* Camera/Photo buttons */
+    .picker-actions { display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; }
+    .btn { padding:9px 12px; border-radius:10px; border:1px solid #2a3140; background:#0f1117; color:#e9edf1; }
+    .btn.ghost { background:transparent; }
+    .btn.primary { background:#16c27a; color:#041; border-color:#0fa365; font-weight:600; }
+    /* Make controls stack on small screens */
+    @media (max-width: 600px) {
+      .controls { grid-template-columns: 1fr !important; gap: 10px; }
+      .controls .toggles { justify-content: flex-start !important; }
+    }
