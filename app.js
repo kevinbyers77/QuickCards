@@ -1,9 +1,10 @@
-/* Card Wallet — with brightness/haptics, readable dialog, camera+library pickers */
+/* Card Wallet — smaller cards + Settings dialog + existing features */
 (() => {
   const dbName = 'card-wallet-db';
   const storeName = 'cards';
   let db, deferredPrompt = null, wakeLock = null;
 
+  // Core elements
   const gallery = document.getElementById('gallery');
   const tpl = document.getElementById('cardTpl');
   const addBtn = document.getElementById('btnAdd');
@@ -11,15 +12,18 @@
   const editForm = document.getElementById('editForm');
   const dialogTitle = document.getElementById('dialogTitle');
   const nameInput = document.getElementById('nameInput');
-  const sortBy = document.getElementById('sortBy');
-  const search = document.getElementById('search');
   const barcodeDialog = document.getElementById('barcodeDialog');
   const barcodeImg = document.getElementById('barcodeImg');
-  const installBtn = document.getElementById('installBtn');
+
+  // Settings UI
+  const settingsBtn = document.getElementById('settingsBtn');
+  const settingsDialog = document.getElementById('settingsDialog');
+  const sortBy = document.getElementById('sortBy');
+  const search = document.getElementById('search');
   const brightToggle = document.getElementById('brightToggle');
   const hapticsToggle = document.getElementById('hapticsToggle');
 
-  // new picker elements
+  // Picker (camera/library) elements
   const cardTake = document.getElementById('cardTake');
   const cardChoose = document.getElementById('cardChoose');
   const cardCameraInput = document.getElementById('cardImageCamera');
@@ -32,12 +36,13 @@
   const barFileInput = document.getElementById('barcodeFile');
   const barSelected = document.getElementById('barSelected');
 
+  const installBtn = document.getElementById('installBtn');
+  const PREFS_KEY = 'cw_prefs_v2'; // bump key since we added settings dialog
+
   let pendingCardFile = null;
   let pendingBarFile  = null;
 
-  const PREFS_KEY = 'cw_prefs_v1';
-
-  // PWA install
+  // Install prompt
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault(); deferredPrompt = e; if (installBtn) installBtn.hidden = false;
   });
@@ -47,20 +52,31 @@
     deferredPrompt = null; installBtn.hidden = true;
   });
 
+  // Settings open
+  settingsBtn.addEventListener('click', () => settingsDialog.showModal());
+
   // Prefs
   function loadPrefs(){
     try{
       const p = JSON.parse(localStorage.getItem(PREFS_KEY) || '{}');
+      if (p.sortBy) sortBy.value = p.sortBy;
+      if (typeof p.search === 'string') search.value = p.search;
       if (typeof p.bright === 'boolean') brightToggle.checked = p.bright;
       if (typeof p.haptics === 'boolean') hapticsToggle.checked = p.haptics;
     }catch{}
   }
   function savePrefs(){
     localStorage.setItem(PREFS_KEY, JSON.stringify({
+      sortBy: sortBy.value,
+      search: search.value,
       bright: !!brightToggle.checked,
       haptics: !!hapticsToggle.checked
     }));
   }
+  ['change','input'].forEach(ev=>{
+    sortBy.addEventListener(ev, ()=>{ savePrefs(); render(); });
+    search.addEventListener(ev, ()=>{ savePrefs(); render(); });
+  });
   brightToggle.addEventListener('change', savePrefs);
   hapticsToggle.addEventListener('change', savePrefs);
   loadPrefs();
@@ -108,7 +124,7 @@
   const blobFrom = (buf,type) => new Blob([buf], { type: type || 'image/png' });
   const fmtDate = (ts)=> ts ? new Date(ts).toLocaleString([], {hour:'2-digit',minute:'2-digit',day:'2-digit',month:'short'}) : '—';
 
-  function sortCards(cards){
+  function sortFilter(cards){
     const q = (search.value||'').toLowerCase().trim();
     let arr = [...cards]; if (q) arr = arr.filter(c => (c.name||'').toLowerCase().includes(q));
     switch (sortBy.value) {
@@ -121,7 +137,7 @@
   }
 
   async function render(){
-    const cards = sortCards(await getAll());
+    const cards = sortFilter(await getAll());
     gallery.innerHTML = '';
     const frag = document.createDocumentFragment();
     for (const card of cards){
@@ -163,6 +179,7 @@
     editDialog.showModal();
   }
 
+  // FAB
   addBtn.addEventListener('click', () => openEdit(null));
 
   // Camera / library triggers
@@ -170,63 +187,40 @@
   cardChoose.addEventListener('click', () => cardFileInput.click());
   barTake.addEventListener('click', () => barCameraInput.click());
   barChoose.addEventListener('click', () => barFileInput.click());
+  [cardCameraInput, cardFileInput].forEach(inp => inp.addEventListener('change', () => {
+    if (inp.files && inp.files[0]) { pendingCardFile = inp.files[0]; cardSelected.textContent = pendingCardFile.name || 'Photo selected'; }
+  }));
+  [barCameraInput, barFileInput].forEach(inp => inp.addEventListener('change', () => {
+    if (inp.files && inp.files[0]) { pendingBarFile = inp.files[0]; barSelected.textContent = pendingBarFile.name || 'Photo selected'; }
+  }));
 
-  // Capture selected files into state
-  [cardCameraInput, cardFileInput].forEach(inp => {
-    inp.addEventListener('change', () => {
-      if (inp.files && inp.files[0]) {
-        pendingCardFile = inp.files[0];
-        cardSelected.textContent = `${pendingCardFile.name || 'Photo selected'}`;
-      }
-    });
-  });
-  [barCameraInput, barFileInput].forEach(inp => {
-    inp.addEventListener('change', () => {
-      if (inp.files && inp.files[0]) {
-        pendingBarFile = inp.files[0];
-        barSelected.textContent = `${pendingBarFile.name || 'Photo selected'}`;
-      }
-    });
-  });
-
-  // Allow Cancel to close without being blocked by preventDefault
+  // Save / Cancel
   editForm.addEventListener('submit', async (e) => {
-    if (e.submitter && e.submitter.value === 'cancel') {
-      editDialog.close();
-      return;
-    }
-    e.preventDefault(); // only for Save
+    if (e.submitter && e.submitter.value === 'cancel') { editDialog.close(); return; }
+    e.preventDefault();
 
     const id = editForm.dataset.id ? Number(editForm.dataset.id) : null;
     const name = nameInput.value.trim();
 
-    // Read chosen files (from either camera or library)
     async function toBlob(file){ if (!file) return null; const buf = await readFile(file); return blobFrom(buf, file.type); }
     const cardBlob = await toBlob(pendingCardFile);
     const barBlob  = await toBlob(pendingBarFile);
 
     if (id){
       const current = (await getAll()).find(c => c.id === id);
-      const updated = {
-        ...current,
-        name,
-        cardImage: cardBlob || current.cardImage,
-        barcodeImage: barBlob || current.barcodeImage,
-      };
+      const updated = { ...current, name, cardImage: cardBlob || current.cardImage, barcodeImage: barBlob || current.barcodeImage };
       await putCard(updated);
     } else {
       if (!cardBlob || !barBlob) { alert('Please add both images.'); return; }
       await addCard({ name, cardImage: cardBlob, barcodeImage: barBlob, created: Date.now(), lastOpened: 0, openCount: 0 });
     }
 
-    editDialog.close();
-    await render();
+    editDialog.close(); await render();
   });
 
-  barcodeDialog.addEventListener('click', () => { if (document.startViewTransition) document.startViewTransition(()=>{}); haptic(15); barcodeDialog.close(); });
+  // Barcode behavior
+  barcodeDialog.addEventListener('click', () => { haptic(15); barcodeDialog.close(); });
   barcodeDialog.addEventListener('close', exitBrightMode);
-  sortBy.addEventListener('change', render);
-  search.addEventListener('input', render);
 
   render();
 })();
