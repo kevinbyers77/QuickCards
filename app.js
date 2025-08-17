@@ -1,4 +1,4 @@
-/* Card Wallet — with brightness/haptics, working Cancel, and responsive fixes */
+/* Card Wallet — with brightness/haptics, readable dialog, camera+library pickers */
 (() => {
   const dbName = 'card-wallet-db';
   const storeName = 'cards';
@@ -11,8 +11,6 @@
   const editForm = document.getElementById('editForm');
   const dialogTitle = document.getElementById('dialogTitle');
   const nameInput = document.getElementById('nameInput');
-  const cardImageInput = document.getElementById('cardImageInput');
-  const barcodeImageInput = document.getElementById('barcodeImageInput');
   const sortBy = document.getElementById('sortBy');
   const search = document.getElementById('search');
   const barcodeDialog = document.getElementById('barcodeDialog');
@@ -20,6 +18,23 @@
   const installBtn = document.getElementById('installBtn');
   const brightToggle = document.getElementById('brightToggle');
   const hapticsToggle = document.getElementById('hapticsToggle');
+
+  // new picker elements
+  const cardTake = document.getElementById('cardTake');
+  const cardChoose = document.getElementById('cardChoose');
+  const cardCameraInput = document.getElementById('cardImageCamera');
+  const cardFileInput = document.getElementById('cardImageFile');
+  const cardSelected = document.getElementById('cardSelected');
+
+  const barTake = document.getElementById('barTake');
+  const barChoose = document.getElementById('barChoose');
+  const barCameraInput = document.getElementById('barcodeCamera');
+  const barFileInput = document.getElementById('barcodeFile');
+  const barSelected = document.getElementById('barSelected');
+
+  let pendingCardFile = null;
+  let pendingBarFile  = null;
+
   const PREFS_KEY = 'cw_prefs_v1';
 
   // PWA install
@@ -138,6 +153,10 @@
 
   function openEdit(card){
     editForm.reset();
+    pendingCardFile = null; pendingBarFile = null;
+    cardSelected.textContent = 'No image selected';
+    barSelected.textContent = 'No image selected';
+
     dialogTitle.textContent = card ? 'Edit card' : 'Add card';
     if (card){ editForm.dataset.id = card.id; nameInput.value = card.name || ''; }
     else { delete editForm.dataset.id; }
@@ -146,48 +165,65 @@
 
   addBtn.addEventListener('click', () => openEdit(null));
 
-  // IMPORTANT: allow Cancel to close without being blocked by preventDefault
+  // Camera / library triggers
+  cardTake.addEventListener('click', () => cardCameraInput.click());
+  cardChoose.addEventListener('click', () => cardFileInput.click());
+  barTake.addEventListener('click', () => barCameraInput.click());
+  barChoose.addEventListener('click', () => barFileInput.click());
+
+  // Capture selected files into state
+  [cardCameraInput, cardFileInput].forEach(inp => {
+    inp.addEventListener('change', () => {
+      if (inp.files && inp.files[0]) {
+        pendingCardFile = inp.files[0];
+        cardSelected.textContent = `${pendingCardFile.name || 'Photo selected'}`;
+      }
+    });
+  });
+  [barCameraInput, barFileInput].forEach(inp => {
+    inp.addEventListener('change', () => {
+      if (inp.files && inp.files[0]) {
+        pendingBarFile = inp.files[0];
+        barSelected.textContent = `${pendingBarFile.name || 'Photo selected'}`;
+      }
+    });
+  });
+
+  // Allow Cancel to close without being blocked by preventDefault
   editForm.addEventListener('submit', async (e) => {
-    // If the cancel button submitted, just close.
     if (e.submitter && e.submitter.value === 'cancel') {
       editDialog.close();
       return;
     }
-
-    e.preventDefault(); // Only prevent for Save path
+    e.preventDefault(); // only for Save
 
     const id = editForm.dataset.id ? Number(editForm.dataset.id) : null;
     const name = nameInput.value.trim();
 
-    let cardImageBlob = null, barcodeImageBlob = null;
-    if (cardImageInput.files && cardImageInput.files[0]) {
-      const arr = await readFile(cardImageInput.files[0]);
-      cardImageBlob = blobFrom(arr, cardImageInput.files[0].type);
-    }
-    if (barcodeImageInput.files && barcodeImageInput.files[0]) {
-      const arr2 = await readFile(barcodeImageInput.files[0]);
-      barcodeImageBlob = blobFrom(arr2, barcodeImageInput.files[0].type);
-    }
+    // Read chosen files (from either camera or library)
+    async function toBlob(file){ if (!file) return null; const buf = await readFile(file); return blobFrom(buf, file.type); }
+    const cardBlob = await toBlob(pendingCardFile);
+    const barBlob  = await toBlob(pendingBarFile);
 
     if (id){
       const current = (await getAll()).find(c => c.id === id);
       const updated = {
         ...current,
         name,
-        cardImage: cardImageBlob || current.cardImage,
-        barcodeImage: barcodeImageBlob || current.barcodeImage,
+        cardImage: cardBlob || current.cardImage,
+        barcodeImage: barBlob || current.barcodeImage,
       };
       await putCard(updated);
     } else {
-      if (!cardImageBlob || !barcodeImageBlob) { alert('Please choose both images.'); return; }
-      await addCard({ name, cardImage: cardImageBlob, barcodeImage: barcodeImageBlob, created: Date.now(), lastOpened: 0, openCount: 0 });
+      if (!cardBlob || !barBlob) { alert('Please add both images.'); return; }
+      await addCard({ name, cardImage: cardBlob, barcodeImage: barBlob, created: Date.now(), lastOpened: 0, openCount: 0 });
     }
 
     editDialog.close();
     await render();
   });
 
-  barcodeDialog.addEventListener('click', () => { haptic(15); barcodeDialog.close(); });
+  barcodeDialog.addEventListener('click', () => { if (document.startViewTransition) document.startViewTransition(()=>{}); haptic(15); barcodeDialog.close(); });
   barcodeDialog.addEventListener('close', exitBrightMode);
   sortBy.addEventListener('change', render);
   search.addEventListener('input', render);
