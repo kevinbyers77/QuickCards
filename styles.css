@@ -125,4 +125,19 @@ body.bright-mode .chip{border-color:#e1e1e1;color:#333}
   .controls .toggles {
     justify-content: flex-start;
   }
+  
 }
+/* Stop iOS input zoom */
+input, select, textarea, button {
+  font-size: 16px;       /* iOS won't zoom if it's ≥16px */
+  line-height: 1.2;      /* avoids clipping */
+}
+
+/* (Optional) specifically for the dialog fields */
+.sheet input[type="text"],
+.sheet input[type="file"],
+.sheet input:not([type]) {
+  font-size: 16px;
+}
+
+html { -webkit-text-size-adjust: 100%; }
