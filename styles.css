@@ -44,8 +44,8 @@ body{
 .btn.ghost{background:transparent}
 .btn.primary{background:var(--brand);border-color:var(--brand-strong);color:#041;font-weight:600}
 
-/* Gallery grid (denser) */
-#gallery{display:grid;gap:12px;grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); padding-block:12px}
+/* Gallery grid (compact) */
+#gallery{display:grid;gap:10px;grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); padding-block:12px}
 .card{
   background: linear-gradient(180deg, var(--card), var(--card-strong));
   border:1px solid var(--line);
@@ -57,13 +57,21 @@ body{
 .card:hover{transform: translateY(-2px); border-color:#2a3140; box-shadow: 0 6px 28px rgba(0,0,0,.45)}
 .thumbBtn{display:block;padding:0;border:0;background:none;cursor:pointer}
 .thumb{width:100%; aspect-ratio: 3/2; object-fit:cover; display:block; background:#0a0a0a}
-.meta{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px}
-.name{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.95rem}
-.stats{display:flex;gap:8px;align-items:center}
-.chip{border:1px solid var(--line);color:var(--muted);padding:1px 6px;border-radius:999px;font-size:.72rem}
-.cardMenu{display:flex;gap:8px;padding:0 10px 10px}
-.cardMenu .ghost{background:transparent;border:1px solid var(--line);color:var(--text);padding:7px 9px;border-radius:10px}
-.cardMenu .danger{background:#2a1616;border:1px solid #3a1c1c;color:#ffb4b4;padding:7px 9px;border-radius:10px}
+
+/* Meta line with name + (optional) stats */
+.meta{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 8px}
+.name{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.92rem}
+.stats{display:none;gap:6px;align-items:center}
+.chip{border:1px solid var(--line);color:var(--muted);padding:1px 6px;border-radius:999px;font-size:.68rem}
+
+/* Action row hidden by default */
+.cardMenu{display:none;gap:8px;padding:0 8px 8px}
+.cardMenu .ghost{background:transparent;border:1px solid var(--line);color:var(--text);padding:6px 8px;border-radius:10px}
+.cardMenu .danger{background:#2a1616;border:1px solid #3a1c1c;color:#ffb4b4;padding:6px 8px;border-radius:10px}
+
+/* When details are ON, show stats + actions */
+body.details-on .stats{display:flex}
+body.details-on .cardMenu{display:flex}
 
 /* FAB */
 .fab{
@@ -103,7 +111,11 @@ body.bright-mode .appbar, body.bright-mode .shell, body.bright-mode .sheet{backg
 body.bright-mode .card{background:#fff;border-color:#e8e8e8}
 body.bright-mode .chip{border-color:#e1e1e1;color:#333}
 
-.footnote{color:var(--muted);padding-bottom:64px}
+/* Footer row with details toggle */
+.footrow{display:flex;justify-content:space-between;align-items:center;color:var(--muted);padding-bottom:64px}
+@media (max-width:560px){
+  .footrow{flex-direction:column;gap:10px;align-items:flex-start}
+}
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce){

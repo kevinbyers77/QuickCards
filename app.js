@@ -1,9 +1,10 @@
-/* Card Wallet — fixed build */
+/* Card Wallet — compact cards + details toggle */
 (() => {
   const dbName = 'card-wallet-db';
   const storeName = 'cards';
   let db, deferredPrompt = null, wakeLock = null;
 
+  // Elements
   const gallery = document.getElementById('gallery');
   const tpl = document.getElementById('cardTpl');
   const addBtn = document.getElementById('btnAdd');
@@ -20,13 +21,14 @@
   const search = document.getElementById('search');
   const brightToggle = document.getElementById('brightToggle');
   const hapticsToggle = document.getElementById('hapticsToggle');
+  const detailsToggle = document.getElementById('detailsToggle');
 
+  // Picker elements
   const cardTake = document.getElementById('cardTake');
   const cardChoose = document.getElementById('cardChoose');
   const cardCameraInput = document.getElementById('cardImageCamera');
   const cardFileInput = document.getElementById('cardImageFile');
   const cardSelected = document.getElementById('cardSelected');
-
   const barTake = document.getElementById('barTake');
   const barChoose = document.getElementById('barChoose');
   const barCameraInput = document.getElementById('barcodeCamera');
@@ -34,11 +36,12 @@
   const barSelected = document.getElementById('barSelected');
 
   const installBtn = document.getElementById('installBtn');
-  const PREFS_KEY = 'cw_prefs_v4';
+  const PREFS_KEY = 'cw_prefs_v5';
 
   let pendingCardFile = null;
   let pendingBarFile  = null;
 
+  // PWA install
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault(); deferredPrompt = e; if (installBtn) installBtn.hidden = false;
   });
@@ -48,8 +51,9 @@
     deferredPrompt = null; installBtn.hidden = true;
   });
 
+  // Settings & prefs
   settingsBtn.addEventListener('click', () => settingsDialog.showModal());
-
+  function applyDetailsClass(){ document.body.classList.toggle('details-on', !!detailsToggle.checked); }
   function loadPrefs(){
     try{
       const p = JSON.parse(localStorage.getItem(PREFS_KEY) || '{}');
@@ -57,24 +61,27 @@
       if (typeof p.search === 'string') search.value = p.search;
       if (typeof p.bright === 'boolean') brightToggle.checked = p.bright;
       if (typeof p.haptics === 'boolean') hapticsToggle.checked = p.haptics;
+      if (typeof p.details === 'boolean') detailsToggle.checked = p.details;
     }catch{}
+    applyDetailsClass();
   }
   function savePrefs(){
     localStorage.setItem(PREFS_KEY, JSON.stringify({
       sortBy: sortBy.value,
       search: search.value,
       bright: !!brightToggle.checked,
-      haptics: !!hapticsToggle.checked
+      haptics: !!hapticsToggle.checked,
+      details: !!detailsToggle.checked
     }));
   }
   ['change','input'].forEach(ev=>{
     sortBy.addEventListener(ev, ()=>{ savePrefs(); render(); });
     search.addEventListener(ev, ()=>{ savePrefs(); render(); });
   });
-  brightToggle.addEventListener('change', savePrefs);
-  hapticsToggle.addEventListener('change', savePrefs);
+  [brightToggle, hapticsToggle, detailsToggle].forEach(el => el.addEventListener('change', ()=>{ savePrefs(); applyDetailsClass(); }));
   loadPrefs();
 
+  // Haptics + Brightness
   function haptic(ms=20){ if (hapticsToggle.checked && navigator.vibrate) navigator.vibrate(ms); }
   async function enterBrightMode(){
     if (!brightToggle.checked) return;
@@ -91,6 +98,7 @@
     try { if (document.fullscreenElement && document.exitFullscreen) await document.exitFullscreen(); } catch {}
   }
 
+  // IndexedDB
   function openDB(){
     return new Promise((resolve,reject)=>{
       const req = indexedDB.open(dbName,1);
@@ -111,6 +119,7 @@
   async function putCard(d){ const s=await idb('readwrite'); return new Promise((res,rej)=>{ const r=s.put(d); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
   async function deleteCard(id){ const s=await idb('readwrite'); return new Promise((res,rej)=>{ const r=s.delete(id); r.onsuccess=()=>res(); r.onerror=()=>rej(r.error); }); }
 
+  // Utils
   const readFile = (file) => new Promise((res,rej)=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.onerror=rej; fr.readAsArrayBuffer(file); });
   const blobFrom = (buf,type) => new Blob([buf], { type: type || 'image/png' });
   const fmtDate = (ts)=> ts ? new Date(ts).toLocaleString([], {hour:'2-digit',minute:'2-digit',day:'2-digit',month:'short'}) : '—';
@@ -177,7 +186,6 @@
   cardChoose.addEventListener('click', () => cardFileInput.click());
   barTake.addEventListener('click', () => barCameraInput.click());
   barChoose.addEventListener('click', () => barFileInput.click());
-
   [cardCameraInput, cardFileInput].forEach(inp => inp.addEventListener('change', () => {
     if (inp.files && inp.files[0]) { pendingCardFile = inp.files[0]; cardSelected.textContent = pendingCardFile.name || 'Photo selected'; }
   }));
@@ -185,6 +193,7 @@
     if (inp.files && inp.files[0]) { pendingBarFile = inp.files[0]; barSelected.textContent = pendingBarFile.name || 'Photo selected'; }
   }));
 
+  // Save / Cancel
   editForm.addEventListener('submit', async (e) => {
     if (e.submitter && e.submitter.value === 'cancel') { editDialog.close(); return; }
     e.preventDefault();
