@@ -115,3 +115,14 @@ body.bright-mode .chip{border-color:#e1e1e1;color:#333}
 @media (prefers-reduced-motion: reduce){
   *{animation-duration:0.01ms!important; animation-iteration-count:1!important; transition-duration:0.01ms!important; scroll-behavior:auto!important;}
 }
+
+/* Make controls stack on small screens */
+@media (max-width: 600px) {
+  .controls {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .controls .toggles {
+    justify-content: flex-start;
+  }
+}
