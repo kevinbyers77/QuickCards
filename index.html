@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#0b5">
   <link rel="icon" href="icons/icon-192.png" sizes="192x192">
   <link rel="stylesheet" href="styles.css">
-
+   
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
@@ -52,17 +52,36 @@
         <label>Card name
           <input required name="name" id="nameInput" maxlength="80" placeholder="Woolworths Rewards">
         </label>
-        <label>Card image
-          <input required type="file" accept="image/*" capture="environment" id="cardImageInput">
-        </label>
-        <label>Barcode image
-          <input required type="file" accept="image/*" id="barcodeImageInput">
-        </label>
+
+        <!-- Card image picker -->
+        <div class="picker">
+          <div class="picker-label">Card image</div>
+          <div class="picker-actions">
+            <button type="button" class="btn" id="cardTake">📷 Take photo</button>
+            <button type="button" class="btn ghost" id="cardChoose">Choose photo</button>
+          </div>
+          <!-- Separate inputs: camera vs library -->
+          <input type="file" accept="image/*" capture="environment" id="cardImageCamera" hidden>
+          <input type="file" accept="image/*" id="cardImageFile" hidden>
+          <div class="hint" id="cardSelected">No image selected</div>
+        </div>
+
+        <!-- Barcode image picker -->
+        <div class="picker">
+          <div class="picker-label">Barcode image</div>
+          <div class="picker-actions">
+            <button type="button" class="btn" id="barTake">📷 Take photo</button>
+            <button type="button" class="btn ghost" id="barChoose">Choose photo</button>
+          </div>
+          <input type="file" accept="image/*" capture="environment" id="barcodeCamera" hidden>
+          <input type="file" accept="image/*" id="barcodeFile" hidden>
+          <div class="hint" id="barSelected">No image selected</div>
+        </div>
       </div>
+
       <menu>
-        <!-- Make cancel submit with value=cancel and skip validation -->
-        <button value="cancel" class="ghost" formnovalidate>Cancel</button>
-        <button id="saveBtn" value="default" class="primary">Save</button>
+        <button value="cancel" class="btn ghost" formnovalidate>Cancel</button>
+        <button id="saveBtn" value="default" class="btn primary">Save</button>
       </menu>
     </form>
   </dialog>
